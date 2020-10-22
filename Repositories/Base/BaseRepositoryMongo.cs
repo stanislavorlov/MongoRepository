@@ -13,13 +13,24 @@ namespace Repositories.Base
     public abstract class BaseRepositoryMongo<T> : IRepository<T> where T : BaseEntity
     {
         protected readonly IMongoClient MongoClient;
-        protected readonly ISettings Settings;
         protected readonly ILogger Logger;
+        protected readonly string DbName;
+        protected readonly string CollectionName;
 
         protected BaseRepositoryMongo() { }
 
         protected BaseRepositoryMongo(IMongoClient mongoClient, ISettings settings, ILogger logger)
-            => (MongoClient, Settings, Logger) = (mongoClient, settings, logger);
+        {
+            Ensure.NotNull(mongoClient, nameof(mongoClient));
+            Ensure.NotNull(settings?.MongoDbName, nameof(settings));
+            Ensure.NotNull(settings?.MongoCollectionName, nameof(settings));
+            Ensure.NotNull(logger, nameof(logger));
+
+            MongoClient = mongoClient;
+            Logger = logger;
+            DbName = settings.MongoDbName;
+            CollectionName = settings.MongoCollectionName;
+        }
 
         public virtual async Task<bool> CreateAsync(T model, CancellationToken cancellationToken = default)
         {
@@ -105,9 +116,9 @@ namespace Repositories.Base
 
         protected IMongoCollection<T> GetMongoCollection()
         {
-            var database = MongoClient.GetDatabase(Settings.MongoDbName);
+            var database = MongoClient.GetDatabase(DbName);
 
-            return database.GetCollection<T>(Settings.MongoCollectionName);
+            return database.GetCollection<T>(CollectionName);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Common;
+using MongoDB.Driver;
 using Repositories.Base;
 using Repositories.Contracts;
 using Repositories.Entities;
@@ -9,6 +10,10 @@ namespace Repositories
 {
     public class PersonRepository : BaseRepositoryMongo<Person>, IPersonRepository
     {
+        public PersonRepository(IMongoClient mongoClient, ISettings settings, ILogger logger)
+            : base(mongoClient, settings, logger)
+        { }
+
         public async Task<List<Person>> FindAdultPersons()
         {
             var builder = Builders<Person>.Filter;

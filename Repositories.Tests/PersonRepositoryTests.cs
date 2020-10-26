@@ -1,3 +1,4 @@
+using AutoFixture;
 using Common;
 using MongoDB.Driver;
 using Moq;
@@ -16,20 +17,27 @@ namespace Repositories.Tests
     {
         private readonly PersonRepository personRepository;
 
-        private const string DbName = "TestDB";
-        private const string CollectionName = "PersonCollection";
+        private readonly string DbName;
+        private readonly string CollectionName;
 
         private readonly Mock<IMongoClient> mongoClientMock;
         private readonly Mock<IMongoDatabase> mongoDatabaseMock;
         private readonly Mock<ISettings> settingsMock;
         private readonly Mock<ILogger> loggerMock;
 
+        private readonly IFixture fixture;
+
         public PersonRepositoryTests()
         {
+            fixture = new Fixture();
+
             mongoClientMock = new Mock<IMongoClient>();
             mongoDatabaseMock = new Mock<IMongoDatabase>();
             settingsMock = new Mock<ISettings>();
             loggerMock = new Mock<ILogger>();
+
+            DbName = fixture.Build<string>().Create();
+            CollectionName = fixture.Build<string>().Create();
 
             SetupSettings();
 

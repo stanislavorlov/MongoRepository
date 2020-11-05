@@ -51,7 +51,13 @@ namespace Repositories.Tests
         {
             var collectionMock = SetupMongoCollectionMock();
 
-            var persons = new List<Person> { new Person { Id = Guid.NewGuid(), Age = 25 } };
+            var persons = new List<Person> 
+            { 
+                fixture
+                    .Build<Person>()
+                    .With(p => p.Age, 25)
+                    .Create()
+            };
 
             Mock<IAsyncCursor<Person>> asyncPersonCursorMock = SetupMongoCursorMock(persons);
 
@@ -77,16 +83,19 @@ namespace Repositories.Tests
         {
             var collectionMock = SetupMongoCollectionMock();
 
-            var person = new Person { };
+            var person = fixture.Create<Person>();
 
+            Person actual = null;
             collectionMock
-                .Setup(_ => _.InsertOneAsync(person, null, default))
+                .Setup(_ => _.InsertOneAsync(It.IsAny<Person>(), It.IsAny<InsertOneOptions>(), It.IsAny<CancellationToken>()))
                 .Callback<Person, InsertOneOptions, CancellationToken>((document, options, cancellationToken) =>
                 {
-                    Assert.Equal(person, document);
+                    actual = document;
                 });
 
             _ = await personRepository.CreateAsync(person);
+
+            Assert.Equal(person, actual);
         }
 
         private Mock<IMongoCollection<Person>> SetupMongoCollectionMock()

@@ -10,7 +10,7 @@ namespace Repositories
 {
     public class PersonRepository : BaseRepositoryMongo<Person>, IPersonRepository
     {
-        public PersonRepository(IMongoClient mongoClient, ISettings settings, ILogger logger)
+        public PersonRepository(IMongoClient mongoClient, IMongoSettings settings, ILogger logger)
             : base(mongoClient, settings, logger)
         { }
 

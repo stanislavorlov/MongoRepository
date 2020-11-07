@@ -22,7 +22,7 @@ namespace Repositories.Tests
         private readonly Mock<ILogger> loggerMock;
 
         private readonly IFixture fixture;
-        private readonly ISettings settings;
+        private readonly IMongoSettings settings;
 
         public PersonRepositoryTests()
         {
@@ -32,7 +32,7 @@ namespace Repositories.Tests
             mongoDatabaseMock = new Mock<IMongoDatabase>();
             loggerMock = new Mock<ILogger>();
 
-            settings = fixture.Build<Settings>().Create();
+            settings = fixture.Build<MongoSettings>().Create();
 
             personRepository = new PersonRepository(mongoClientMock.Object,
                 settings,
@@ -42,20 +42,22 @@ namespace Repositories.Tests
         [Fact]
         public async Task Test_FindAdultPersons_Ok()
         {
+            var random = new Random();
+
             var collectionMock = SetupMongoCollectionMock();
 
             var persons = new List<Person> 
             { 
                 fixture
                     .Build<Person>()
-                    .With(p => p.Age, 25)
+                    .With(_ => _.Age, random.Next(18, 100))
                     .Create()
             };
 
             Mock<IAsyncCursor<Person>> asyncPersonCursorMock = SetupMongoCursorMock(persons);
 
             var filterBuilder = Builders<Person>.Filter;
-            var filter = filterBuilder.Gte(p => p.Age, 18);
+            var filter = filterBuilder.Gte(_ => _.Age, 18);
 
             var expectedFilterAsBsonDoc = filter.RenderToJson();
 

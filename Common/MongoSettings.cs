@@ -1,6 +1,6 @@
 ﻿namespace Common
 {
-    public class Settings : ISettings
+    public class MongoSettings : IMongoSettings
     {
         public string MongoDbName { get; set; }
 

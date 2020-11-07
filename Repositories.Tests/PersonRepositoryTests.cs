@@ -17,15 +17,12 @@ namespace Repositories.Tests
     {
         private readonly PersonRepository personRepository;
 
-        private readonly string DbName;
-        private readonly string CollectionName;
-
         private readonly Mock<IMongoClient> mongoClientMock;
         private readonly Mock<IMongoDatabase> mongoDatabaseMock;
-        private readonly Mock<ISettings> settingsMock;
         private readonly Mock<ILogger> loggerMock;
 
         private readonly IFixture fixture;
+        private readonly ISettings settings;
 
         public PersonRepositoryTests()
         {
@@ -33,16 +30,12 @@ namespace Repositories.Tests
 
             mongoClientMock = new Mock<IMongoClient>();
             mongoDatabaseMock = new Mock<IMongoDatabase>();
-            settingsMock = new Mock<ISettings>();
             loggerMock = new Mock<ILogger>();
 
-            DbName = fixture.Build<string>().Create();
-            CollectionName = fixture.Build<string>().Create();
-
-            SetupSettings();
+            settings = fixture.Build<Settings>().Create();
 
             personRepository = new PersonRepository(mongoClientMock.Object,
-                settingsMock.Object,
+                settings,
                 loggerMock.Object);
         }
 
@@ -103,7 +96,7 @@ namespace Repositories.Tests
             var collectionMock = new Mock<IMongoCollection<Person>>();
 
             mongoClientMock
-                .Setup(_ => _.GetDatabase(DbName, null))
+                .Setup(_ => _.GetDatabase(settings.MongoDbName, null))
                 .Returns(mongoDatabaseMock.Object);
 
             collectionMock
@@ -111,7 +104,7 @@ namespace Repositories.Tests
                 .Returns(mongoDatabaseMock.Object);
 
             mongoDatabaseMock
-                .Setup(_ => _.GetCollection<Person>(CollectionName, null))
+                .Setup(_ => _.GetCollection<Person>(settings.MongoCollectionName, null))
                 .Returns(collectionMock.Object);
 
             return collectionMock;
@@ -136,16 +129,6 @@ namespace Repositories.Tests
                 .ReturnsAsync(false);
 
             return asyncPersonCursorMock;
-        }
-
-        private void SetupSettings()
-        {
-            settingsMock
-                .SetupGet(_ => _.MongoDbName)
-                .Returns(DbName);
-            settingsMock
-                .SetupGet(_ => _.MongoCollectionName)
-                .Returns(CollectionName);
         }
     }
 }
